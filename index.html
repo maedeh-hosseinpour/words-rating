@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Word Difficulty Rating</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+      background: #fafafa;
+    }
+
+    #word {
+      width: 520px;
+      height: 100px;
+      margin: 20px auto;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 48px;
+    }
+
+    .word-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .rating-button {
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      padding: 16px;
+      margin: 8px;
+      min-width: 115px;
+      cursor: pointer;
+      border: solid 1px #e7e7e7;
+      border-radius: 2px;
+      background-color: #fff;
+    }
+
+    .rating-button:hover {
+      background-color: #fafafa;
+      border: solid 1px #ccc;
+    }
+
+    .letter.selectable { cursor: pointer; }
+    .letter.selectable:hover { color: rgb(20, 88, 197); }
+    .letter.clicked { color: rgb(200, 17, 17); }
+
+    #next-btn, #back-btn, #submit-btn {
+      margin: 20px 10px 0;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #rating-instruction {
+      font-size: 16px;
+      color: #555;
+      margin-top: 10px;
+    }
+
+    .clear-text {
+      color: gray;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    #main-task { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Participant ID prompt -->
+  <div id="id-input-section">
+    <h2 for="participantId">Enter your Participant ID:</h2><br>
+    <input type="text" id="participantId" placeholder=""><br><br>
+    <button onclick="startTask()">Start</button>
+  </div>
+
+  <!-- Main task -->
+  <div id="main-task">
+    <h2>What is your level of difficulty in reading this word?</h2>
+    <div>
+      <button class="rating-button" onclick="rateWord(1)">Very Easy</button>
+      <button class="rating-button" onclick="rateWord(2)">Easy</button>
+      <button class="rating-button" onclick="rateWord(3)">Hard</button>
+      <button class="rating-button" onclick="rateWord(4)">Very Hard</button>
+    </div>
+    <div id="word"></div>
+    <div id="rating-instruction" style="display: none;">
+      Select the letters you find difficult to read. <span id="clear" class="clear-text">[clear selection]</span>
+    </div>
+    <div>
+      <button id="back-btn" onclick="goToPreviousWord()">Back</button>
+      <button id="next-btn" onclick="goToNextWord()">Next</button>
+      <button id="submit-btn" onclick="submitResults()">Submit All Responses</button>
+    </div>
+  </div>
+
+  <script>
+    let participantId = "";
+    const words = ["psychology", "banana", "catastrophe", "elephant", "zebra"];
+    let currentIndex = 0;
+    let startTime = Date.now();
+    let responses = [];
+
+    function startTask() {
+      const input = document.getElementById("participantId").value.trim();
+      if (!input) return alert("Please enter your Participant ID.");
+      participantId = input;
+      document.getElementById("id-input-section").style.display = "none";
+      document.getElementById("main-task").style.display = "block";
+      showWord();
+    }
+
+    function showWord() {
+      const wordBox = document.getElementById("word");
+      const instruction = document.getElementById("rating-instruction");
+      const backBtn = document.getElementById("back-btn");
+      const nextBtn = document.getElementById("next-btn");
+      const submitBtn = document.getElementById("submit-btn");
+
+      wordBox.innerHTML = "";
+      instruction.style.display = "none";
+      nextBtn.style.display = "none";
+      submitBtn.style.display = "none";
+      backBtn.style.display = currentIndex === 0 ? "none" : "inline-block";
+
+      if (currentIndex < words.length) {
+        const currentWord = words[currentIndex];
+        document.querySelectorAll(".rating-button").forEach(btn => btn.style.display = "inline-block");
+
+        responses[currentIndex] = responses[currentIndex] || {
+          word: currentWord,
+          clicked_letters: [],
+          difficulty: null,
+          time_seconds: null
+        };
+
+        const wordContainer = document.createElement("div");
+        wordContainer.classList.add("word-container");
+
+        [...currentWord].forEach((char, index) => {
+          const span = document.createElement("span");
+          span.textContent = char;
+          span.classList.add("letter");
+          span.dataset.index = index;
+          wordContainer.appendChild(span);
+        });
+
+        wordBox.appendChild(wordContainer);
+        document.getElementById("clear").onclick = clearClicks;
+        startTime = Date.now();
+      } else {
+        wordBox.textContent = "Done!";
+        submitBtn.style.display = "inline-block";
+        backBtn.style.display = "inline-block";
+        document.querySelectorAll(".rating-button").forEach(btn => btn.style.display = "none");
+
+      }
+    }
+
+    function rateWord(rating) {
+      const timeTaken = (Date.now() - startTime) / 1000;
+      if (!responses[currentIndex]) {
+        responses[currentIndex] = {
+          word: words[currentIndex],
+          clicked_letters: [],
+          difficulty: null,
+          time_seconds: null
+        };
+      }
+      responses[currentIndex].difficulty = rating;
+      responses[currentIndex].time_seconds = timeTaken;
+
+      if (rating >= 3) {
+        enableLetterSelection();
+      } else {
+        currentIndex++;
+        showWord();
+      }
+    }
+
+    function enableLetterSelection() {
+      const letters = document.querySelectorAll("#word .letter");
+      letters.forEach(span => {
+        span.classList.add("selectable");
+        span.onclick = () => {
+          const idx = parseInt(span.dataset.index);
+          if (span.classList.contains("clicked")) {
+            span.classList.remove("clicked");
+            responses[currentIndex].clicked_letters = responses[currentIndex].clicked_letters.filter(l => l.position !== idx);
+          } else {
+            span.classList.add("clicked");
+            responses[currentIndex].clicked_letters.push({ letter: span.textContent, position: idx });
+          }
+          document.getElementById("next-btn").style.display =
+            responses[currentIndex].clicked_letters.length > 0 ? "inline-block" : "none";
+        };
+      });
+      document.getElementById("rating-instruction").style.display = "block";
+    }
+
+    function clearClicks() {
+      const letters = document.querySelectorAll("#word .letter");
+      letters.forEach(span => span.classList.remove("clicked"));
+      responses[currentIndex].clicked_letters = [];
+      document.getElementById("next-btn").style.display = "none";
+    }
+
+    function goToNextWord() {
+      currentIndex++;
+      showWord();
+    }
+
+    function goToPreviousWord() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        showWord();
+      }
+    }
+
+    
+    function submitResults() {
+  const url = `https://script.google.com/macros/s/AKfycbyT2oS_ksSSkAEcL4ejjjldXP_AbqOw9E4cqdh_ZZRfa5gZ-AzBYLImPz4oV-yqdxCSSQ/exec?participant=${participantId}`;
+
+  if (!participantId) {
+    return alert("Please enter your Participant ID before submitting.");
+  }
+
+  fetch(url, {
+    method: "POST",
+    body: JSON.stringify(responses)
+  })
+  .then(res => res.text())
+  .then(response => {
+    // Clear the page and show thank you
+    document.body.innerHTML = `
+      <div style="text-align: center; margin-top: 150px; font-family: Arial, sans-serif;">
+        <h1>Thank you for your participation!</h1>
+      </div>
+    `;
+  })
+  .catch(error => {
+    // Silently fail
+    console.warn("Submission may have failed.");
+    console.error("Error details:", error);
+
+    // Still show thank you message
+    document.body.innerHTML = `
+      <div style="text-align: center; margin-top: 150px; font-family: Arial, sans-serif;">
+        <h1>Thank you for your participation!</h1>
+      </div>
+    `;
+  });
+}
+
+
+  </script>
+
+</body>
+</html>

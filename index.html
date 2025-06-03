@@ -240,10 +240,10 @@
       .then(response => {
         alert("Responses submitted successfully!");
       })
-      //.catch(error => {
-      //  alert("Submission failed: " + error.message);
-      //  console.error("Error:", error);
-      //});
+      .catch(error => {
+        console.warn("Submission may have failed, but the page will not alert the user.");
+        console.error("Error details:", error);
+      });
       }
 
   </script>

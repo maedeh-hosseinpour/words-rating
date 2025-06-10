@@ -131,6 +131,7 @@
     let currentIndex = 0;
     let startTime = Date.now();
     let responses = [];
+    const participantUrl = document.referrer || "Direct"; 
 
     function validateProlificId() {
       const input = document.getElementById("participantId").value.trim();
@@ -145,6 +146,16 @@
       document.getElementById("id-input-section").style.display = "none";
       document.getElementById("main-task").style.display = "block";
       showWord();
+    }
+
+    function formatTimestamp(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 
     function showWord() {
@@ -176,7 +187,9 @@
           clicked_letters: [],
           difficulty: null,
           time_seconds: null,
-          reason: ""
+          reason: "",
+          participants_url: participantUrl,
+          timestamp: formatTimestamp(new Date())
         };
 
         const wordContainer = document.createElement("div");
@@ -218,7 +231,9 @@
           clicked_letters: [],
           difficulty: null,
           time_seconds: null,
-          reason: ""
+          reason: "",
+          participants_url: participantUrl,
+          timestamp: formatTimestamp(new Date())
         };
       }
 
@@ -296,19 +311,11 @@
       submitBtn.disabled = true;
       submitBtn.textContent = "Submitting...";
 
-      const formattedResponses = responses.map(response => ({
-        word: response.word,
-        difficulty: response.difficulty,
-        clicked_letters: response.clicked_letters, 
-        time_seconds: response.time_seconds,
-        reason: response.reason
-      }));
-
-      const url = 'https://script.google.com/macros/s/AKfycbw6fGcXRjxdXouoWf5tp3AhwsDJYChLJ4c5QEFO4RDpmuhQ0ju4Hxxz2vD2InhZtYc/exec?participant=' + encodeURIComponent(participantId); 
+      const url = `https://script.google.com/macros/s/AKfycbwtxXb5rlg_AQ8C2HWC-oOFEvgJTcd3QiHLGUllwuy9NPVpRM8bf04A9pgMsRifVx0l/exec?participant=${participantId}`;
 
       fetch(url, {
         method: "POST",
-        body: JSON.stringify(formattedResponses)
+        body: JSON.stringify(responses)
       })
       .then(res => res.text())
       .then(response => {
@@ -321,6 +328,7 @@
       .catch(error => {
         console.warn("Submission may have failed.");
         console.error("Error details:", error);
+
         document.body.innerHTML = `
           <div style="text-align: center; margin-top: 150px; font-family: Arial, sans-serif;">
             <h1>Thank you for your participation!</h1>

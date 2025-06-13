@@ -51,14 +51,19 @@
       border: solid 1px #ccc;
     }
 
-    #start-btn:disabled {
+    #start-btn:disabled,
+    #next-btn:disabled {
       cursor: not-allowed;
       opacity: 0.5;
     }
 
     .letter.selectable { cursor: pointer; }
     .letter.selectable:hover { color: rgb(20, 88, 197); }
-    .letter.clicked { color: rgb(200, 17, 17); }
+    .letter.clicked { 
+      color: rgb(200, 17, 17); 
+      font-weight: bold;
+      font-size: 52px; /* Slightly larger than base 48px */
+    }
 
     #next-btn, #submit-btn {
       margin: 20px 10px 0;
@@ -68,9 +73,9 @@
     }
 
     #rating-instruction {
-      font-size: 16px;
+      font-size: 17px;
       color: #555;
-      margin-top: 10px;
+      margin-top: 15px;
     }
 
     .clear-text {
@@ -88,7 +93,27 @@
       border-radius: 4px;
     }
 
-    #main-task { display: none; }
+    #text-explanation {
+      display: none;
+      margin-top: 25px;
+    }
+
+    #difficultyReason {
+      width: 510px;
+      height: 65px;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 6px;
+    }
+
+    #no-letter-option {
+      font-size: 14px;
+      color: #555;
+      margin-top: 35px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -102,25 +127,27 @@
     <button id="start-btn" onclick="startTask()" disabled>Start</button>
   </div>
 
-  <div id="main-task">
+  <div id="main-task" style="display: none;">
     <h2>What is your level of difficulty in reading this word?</h2>
     <div id="word"></div>
 
     <div>
-      <button class="rating-button" onclick="rateWord(1)">Very Easy</button>
-      <button class="rating-button" onclick="rateWord(2)">Easy</button>
-      <button class="rating-button" onclick="rateWord(3)">Hard</button>
-      <button class="rating-button" onclick="rateWord(4)">Very Hard</button>
+      <button class="rating-button" onclick="rateWord(1)">Very Easy (1)</button>
+      <button class="rating-button" onclick="rateWord(2)">Easy (2)</button>
+      <button class="rating-button" onclick="rateWord(3)">Hard (3)</button>
+      <button class="rating-button" onclick="rateWord(4)">Very Hard (4)</button>
     </div>
     <div id="rating-instruction" style="display: none;">
-      Select the letters you find difficult to read. <span id="clear" class="clear-text">[clear selection]</span>
+      Click the <b>letters</b> in the word above that you found hard to read. <span id="clear" class="clear-text">[reset selected letters]</span>
     </div>
+    <div id="no-letter-option" style="display: none;">If there is no specific letter to select, <u>click here</u></div>
     <div id="text-explanation" style="display: none; margin-top: 25px;">
-      <textarea id="difficultyReason" placeholder="Or explain why this word is hard to read..." 
-                style="width: 510px; height: 65px; font-size: 16px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 4px; padding: 6px;"></textarea>
+      <textarea id="difficultyReason" placeholder="Please explain why this word is hard to read." 
+          style="width: 510px; height: 65px; font-size: 16px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 4px; padding: 6px;" 
+          oninput="checkNextButtonState()"></textarea>
     </div>
     <div>
-      <button id="next-btn" onclick="goToNextWord()">Proceed to the next word</button>
+      <button id="next-btn" onclick="goToNextWord()" disabled>Proceed to the next word</button>
       <button id="submit-btn" onclick="submitResults()">Submit All Responses</button>
     </div>
   </div>
@@ -164,17 +191,31 @@
       const nextBtn = document.getElementById("next-btn");
       const submitBtn = document.getElementById("submit-btn");
       const explanationBox = document.getElementById("text-explanation");
+      const noLetterOption = document.getElementById("no-letter-option");
       const reasonInput = document.getElementById("difficultyReason");
 
-      wordBox.innerHTML = "";
+      wordBox.innerHTML = ""; // Clear previous content
       instruction.style.display = "none";
-      nextBtn.style.display = "none";
+      nextBtn.disabled = true; // Disable Proceed button by default
       explanationBox.style.display = "none";
+      noLetterOption.style.display = "none";
       reasonInput.value = "";
       submitBtn.style.display = "none";
 
       if (currentIndex < words.length) {
         const currentWord = words[currentIndex];
+        const wordContainer = document.createElement("div");
+        wordContainer.classList.add("word-container");
+
+        [...currentWord].forEach((char, index) => {
+          const span = document.createElement("span");
+          span.textContent = char;
+          span.classList.add("letter");
+          span.dataset.index = index;
+          wordContainer.appendChild(span);
+        });
+
+        wordBox.appendChild(wordContainer); // Add the word container to display the word
         document.querySelectorAll(".rating-button").forEach(btn => {
           btn.style.display = "inline-block";
           btn.disabled = false;
@@ -189,39 +230,33 @@
           time_seconds: null,
           reason: "",
           participants_url: participantUrl,
-          timestamp: formatTimestamp(new Date())
+          timestamp: formatTimestamp(new Date()),
+          rating_sequence: [] // Initialize rating sequence
         };
 
-        const wordContainer = document.createElement("div");
-        wordContainer.classList.add("word-container");
-
-        [...currentWord].forEach((char, index) => {
-          const span = document.createElement("span");
-          span.textContent = char;
-          span.classList.add("letter");
-          span.dataset.index = index;
-          wordContainer.appendChild(span);
-        });
-
-        wordBox.appendChild(wordContainer);
         document.getElementById("clear").onclick = clearClicks;
         startTime = Date.now();
       } else {
         wordBox.textContent = "Done!";
         submitBtn.style.display = "inline-block";
+        nextBtn.style.display = "none"; // Hide Proceed button when done
         document.querySelectorAll(".rating-button").forEach(btn => btn.style.display = "none");
       }
     }
 
     function rateWord(rating) {
       const timeTaken = (Date.now() - startTime) / 1000;
+      const nextBtn = document.getElementById("next-btn");
+      const instruction = document.getElementById("rating-instruction");
+      const noLetterOption = document.getElementById("no-letter-option");
+      const explanationBox = document.getElementById("text-explanation");
 
+      // Highlight selected button, reset others to default
       document.querySelectorAll(".rating-button").forEach(btn => {
-        if (btn.textContent.toLowerCase() === getRatingText(rating).toLowerCase()) {
+        if (btn.textContent.toLowerCase().startsWith(getRatingText(rating).toLowerCase())) {
           btn.style.backgroundColor = "#e0e0e0";
         } else {
-          btn.disabled = true;
-          btn.style.opacity = "0.5";
+          btn.style.backgroundColor = "#fff";
         }
       });
 
@@ -233,30 +268,41 @@
           time_seconds: null,
           reason: "",
           participants_url: participantUrl,
-          timestamp: formatTimestamp(new Date())
+          timestamp: formatTimestamp(new Date()),
+          rating_sequence: []
         };
       }
 
+      // Update rating and add to sequence
       responses[currentIndex].difficulty = rating;
       responses[currentIndex].time_seconds = timeTaken;
+      responses[currentIndex].rating_sequence.push(rating);
 
-      if (rating >= 3) {
-        enableLetterSelection();
+      // Reset letter selection and explanation for new rating
+      const letters = document.querySelectorAll("#word .letter");
+      letters.forEach(span => {
+        span.classList.remove("selectable", "clicked");
+        span.onclick = null;
+      });
+      instruction.style.display = "none";
+      explanationBox.style.display = "none";
+      noLetterOption.style.display = "none";
+      document.getElementById("difficultyReason").value = "";
+      responses[currentIndex].clicked_letters = [];
+      responses[currentIndex].reason = "";
+
+      if (rating <= 2) {
+        nextBtn.disabled = false; // Enable Proceed button for Very Easy/Easy
       } else {
-        currentIndex++;
-        showWord();
+        instruction.style.display = "block";
+        noLetterOption.style.display = "block";
+        enableLetterSelection();
+        nextBtn.disabled = true; // Keep disabled until letter or text input
       }
     }
 
     function enableLetterSelection() {
       const letters = document.querySelectorAll("#word .letter");
-      const nextBtn = document.getElementById("next-btn");
-      const explanationBox = document.getElementById("text-explanation");
-      const reasonInput = document.getElementById("difficultyReason");
-
-      explanationBox.style.display = "block";
-      document.getElementById("rating-instruction").style.display = "block";
-
       letters.forEach(span => {
         span.classList.add("selectable");
         span.onclick = () => {
@@ -268,25 +314,32 @@
             span.classList.add("clicked");
             responses[currentIndex].clicked_letters.push({ letter: span.textContent, position: idx });
           }
-          checkNextButtonVisibility();
+          checkNextButtonState();
         };
       });
-
-      reasonInput.oninput = checkNextButtonVisibility;
     }
 
     function clearClicks() {
       const letters = document.querySelectorAll("#word .letter");
       letters.forEach(span => span.classList.remove("clicked"));
       responses[currentIndex].clicked_letters = [];
-      checkNextButtonVisibility();
+      checkNextButtonState();
     }
 
-    function checkNextButtonVisibility() {
+    function showExplanationBox() {
+      const explanationBox = document.getElementById("text-explanation");
+      const noLetterOption = document.getElementById("no-letter-option");
+      explanationBox.style.display = "block";
+      noLetterOption.style.display = "none"; // Hide the click option once textbox is shown
+      document.getElementById("difficultyReason").focus();
+      checkNextButtonState();
+    }
+
+    function checkNextButtonState() {
       const hasClickedLetters = responses[currentIndex].clicked_letters.length > 0;
       const reasonText = document.getElementById("difficultyReason").value.trim();
       const nextBtn = document.getElementById("next-btn");
-      nextBtn.style.display = (hasClickedLetters || reasonText.length > 0) ? "inline-block" : "none";
+      nextBtn.disabled = !(hasClickedLetters || reasonText.length > 0);
     }
 
     function goToNextWord() {
@@ -336,6 +389,28 @@
         `;
       });
     }
+
+    // Add keyboard event listener for rating buttons and Proceed button
+    document.addEventListener('keydown', (event) => {
+      const mainTask = document.getElementById("main-task");
+      if (mainTask.style.display !== "block") return; // Only allow keypresses when main task is visible
+
+      const key = event.key;
+      if (['1', '2', '3', '4'].includes(key)) {
+        const rating = parseInt(key);
+        if (currentIndex < words.length) {
+          rateWord(rating);
+        }
+      } else if (key === 'Enter') {
+        const nextBtn = document.getElementById("next-btn");
+        if (!nextBtn.disabled && currentIndex < words.length) {
+          goToNextWord();
+        }
+      }
+    });
+
+    // Add click event for no-letter option
+    document.getElementById("no-letter-option").onclick = showExplanationBox;
   </script>
 </body>
 </html>

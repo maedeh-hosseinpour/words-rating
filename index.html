@@ -196,31 +196,15 @@
   <script>
     let participantId = "";
     let words = []; 
-    const datasets = [
-      ['Manchuria', 'arithmetic', 'bad', 'barriers', 'beauty', 'brothers', 'clowning', 'competition', 'delicate', 'depression', 'divided', 'drained', 'eight', 'enough', 'for', 'foresaw', 'goddess', 'group', 'historically', 'immigrating', 'information', 'kites', 'mean', 'mobility', 'molecular', 'neatly', 'painting', 'peninsula', 'penniless', 'potentially', 'purr', 'red', 'registration', 'religions', 'remaining', 'rigging', 'shorter', 'stood', 'supported', 'teaching', 'tests', 'their', 'topple', 'turkish', 'whatever', 'which', 'worshiped', 'you', 'your'],
-      ['Guerrillero', 'Tabaqui', 'Tsushima', 'babies', 'beach', 'biophysicist', 'brood', 'centuries', 'change', 'clothed', 'desegregate', 'disease', 'east', 'easy', 'elsewhere', 'emperor', 'enrollees', 'european', 'exclusion', 'fights', 'globe', 'historian', 'house', 'immigration', 'lie', 'methods', 'mongol', 'nothing', 'odd', 'operations', 'our', 'overthrew', 'permission', 'played', 'possessions', 'protecting', 'really', 'reducing', 'restrain', 'scientific', 'shortly', 'symmetrical', 'tablets', 'theirs', 'things', 'those', 'though', 'vanished', 'weigh'],
-      ['Mississippi', 'Ratignolle', 'Symphonie', 'beliefs', 'believed', 'cartography', 'cell', 'character', 'charms', 'circular', 'clothes', 'compromise', 'conscripted', 'crimean', 'deaths', 'descended', 'distinguish', 'do', 'ears', 'earth', 'eventually', 'good', 'hand', 'hard', 'hedges', 'high', 'hour', 'iceman', 'institute', 'interpreted', 'lairs', 'main', 'married', 'math', 'originated', 'plestcheiev', 'population', 'proudhon', 'provisional', 'rallying', 'rapped', 'search', 'sergeant', 'stories', 'than', 'thread', 'troubles', 'way', 'wrote'],
-      ['Korea', 'addition', 'afternoons', 'arabic', 'argument', 'benefitted', 'bird', 'bring', 'counterexamples', 'countries', 'dear', 'disappeared', 'drowsy', 'elaborated', 'exceedingly', 'experts', 'exquisite', 'fantastique', 'generally', 'guaranteed', 'hair', 'happened', 'huts', 'intention', 'investigations', 'knock', 'knowing', 'lead', 'malnourished', 'prevail', 'real', 'resorted', 'school', 'scientists', 'servants', 'shaped', 'sharp', 'shelter', 'short', 'straight', 'studies', 'suggests', 'theorem', 'third', 'three', 'versailles', 'vladivostok', 'writes', 'written'],
-      ['Myanmar', 'against', 'barred', 'birds', 'bound', 'by', 'cauldron', 'chinese', 'classical', 'clear', 'commuted', 'crystallography', 'cunningly', 'depth', 'drainage', 'dwelt', 'eat', 'elaborate', 'established', 'estimates', 'explain', 'eyes', 'fighting', 'french', 'guevara', 'hadn', 'heroes', 'humanity', 'invisible', 'iota', 'looked', 'male', 'motorcycle', 'opposed', 'president', 'pride', 'received', 'rejected', 'says', 'sources', 'speak', 'suppression', 'telomeres', 'thereupon', 'they', 'trapp', 'vulnerable', 'weavers', 'while'],
-      ['admirable', 'application', 'artistotle', 'assassinated', 'assassination', 'because', 'bering', 'bomb', 'buy', 'bygone', 'campgrounds', 'carousing', 'daily', 'dividing', 'dominated', 'efface', 'ethical', 'fashionable', 'fools', 'fruits', 'head', 'health', 'help', 'individuals', 'influence', 'invented', 'lips', 'no', 'obliged', 'ordeal', 'pair', 'pounds', 'ray', 'reality', 'sapphires', 'schools', 'several', 'sewed', 'she', 'shoulders', 'specific', 'speechless', 'tenement', 'theatre', 'throughout', 'traditions', 'truth', 'whenever', 'would'],
-      ['Maurice', 'Nicholas', 'Novastoshnah', 'american', 'around', 'banned', 'bequeathed', 'build', 'communist', 'contains', 'couple', 'czarist', 'develop', 'developing', 'difficult', 'dourov', 'europeans', 'extravagantly', 'foods', 'gogol', 'government', 'happens', 'interpretations', 'learned', 'looms', 'may', 'opportunity', 'original', 'orleans', 'partition', 'rights', 'rodents', 'rogues', 'rooms', 'shere', 'something', 'teachings', 'thereafter', 'these', 'trouble', 'ultimately', 'unemployed', 'weight', 'what', 'whether', 'whither', 'worship', 'wouldn', 'yourselves'],
-      ['Argentina', 'Bangladesh', 'Blenheim', 'about', 'accustomed', 'allowed', 'bacterium', 'brought', 'ceylon', 'che', 'condemned', 'conditions', 'contributed', 'contribution', 'conversations', 'court', 'crick', 'drop', 'fascinating', 'generations', 'happy', 'hear', 'heaved', 'helped', 'higher', 'hundred', 'immediately', 'isle', 'known', 'least', 'literacy', 'mane', 'masquerades', 'mathematics', 'medger', 'north', 'pieces', 'possibility', 'pretexts', 'proof', 'reading', 'revolutions', 'rich', 'ships', 'surrounded', 'there', 'thousands', 'threes', 'together'],
-      ['actually', 'aloud', 'americans', 'background', 'baring', 'begun', 'books', 'changed', 'cherries', 'chimney', 'conclusion', 'damaged', 'delicious', 'either', 'elementary', 'examination', 'falsehoods', 'february', 'fingal', 'genetic', 'god', 'heart', 'heroine', 'huge', 'instead', 'migration', 'money', 'originally', 'paved', 'peanut', 'perfection', 'ponds', 'radical', 'repeat', 'revolution', 'right', 'roslin', 'sloth', 'steamer', 'studied', 'taught', 'teach', 'teacher', 'to', 'tradition', 'unfortunately', 'unmarried', 'veteran', 'without'],
-      ['Roosevelt', 'Turkey', 'agnes', 'although', 'animal', 'applied', 'attempts', 'bagheera', 'benevolent', 'boycotts', 'causes', 'clouds', 'companions', 'conflicts', 'deliciously', 'discipline', 'earning', 'execution', 'forgotten', 'fought', 'found', 'furthermore', 'go', 'gold', 'idolized', 'important', 'inquired', 'japanese', 'kerensky', 'mammary', 'miser', 'nervous', 'ocean', 'oh', 'outpaced', 'paper', 'position', 'published', 'reader', 'room', 'sanitation', 'scoop', 'thrown', 'train', 'understand', 'university', 'watching', 'whose', 'yours'],
-      ['Raymond', 'Schubert', 'agamemnon', 'always', 'anything', 'apparent', 'architecture', 'beethoven', 'carelessly', 'charges', 'corps', 'could', 'earned', 'eaten', 'economic', 'featured', 'graduating', 'heap', 'helping', 'hindu', 'impossibly', 'led', 'meals', 'medical', 'mound', 'mourned', 'neither', 'obviously', 'participated', 'persecution', 'projects', 'reasons', 'recorded', 'representation', 'russian', 'sailors', 'scholar', 'semyonovsky', 'society', 'soldiers', 'son', 'soon', 'stockholder', 'temperament', 'then', 'took', 'training', 'weave', 'wren'],
-      ['Mendelssohn', 'areas', 'began', 'both', 'bourgeoisie', 'changes', 'characters', 'children', 'communities', 'controversial', 'coup', 'curiously', 'day', 'due', 'evers', 'exciting', 'extraordinary', 'famous', 'genetically', 'had', 'impractical', 'inequality', 'influential', 'interested', 'interpreting', 'length', 'ministering', 'mukden', 'musicians', 'myths', 'night', 'others', 'personality', 'plane', 'potential', 'pray', 'prophets', 'qing', 'spanish', 'stare', 'strait', 'suitors', 'tale', 'thimble', 'thought', 'thus', 'transformation', 'whom', 'why'],
-      ['Paul', 'accommodation', 'acknowledges', 'backgrounds', 'be', 'busily', 'catapulted', 'chiquita', 'clipped', 'coats', 'complicated', 'designer', 'different', 'disagreeable', 'dish', 'four', 'goodness', 'grand', 'implications', 'infested', 'knocks', 'look', 'manhood', 'meant', 'month', 'months', 'nationally', 'new', 'officials', 'parts', 'path', 'plunged', 'poor', 'quaint', 'railway', 'republic', 'routes', 'science', 'seal', 'secretary', 'serfdom', 'snapped', 'traits', 'unhappy', 'upper', 'victories', 'ways', 'wealth', 'when'],
-      ['Byelinsky', 'adjusted', 'artists', 'assumptions', 'away', 'based', 'becoming', 'benefit', 'birth', 'blend', 'brain', 'branch', 'deep', 'discrimination', 'does', 'door', 'engels', 'faithfully', 'flippers', 'gain', 'grief', 'heal', 'hebrides', 'held', 'here', 'hidden', 'increase', 'interests', 'merchant', 'milkman', 'mite', 'none', 'pandemic', 'perhaps', 'proletariat', 'regular', 'repealed', 'shirts', 'splashed', 'stool', 'stout', 'structural', 'symphony', 'that', 'themselves', 'thing', 'wealthy', 'where', 'wood'],
-      ['Arthur', 'Hyaena', 'Telemachos', 'afraid', 'appearance', 'beginning', 'bid', 'brother', 'capability', 'ching', 'colonized', 'decided', 'decolonize', 'double', 'exception', 'fish', 'gods', 'governess', 'greatly', 'illiterate', 'irrigation', 'laborer', 'looks', 'loud', 'lounging', 'mowgli', 'national', 'numerous', 'out', 'parliament', 'peasant', 'pupil', 'ready', 'role', 'russians', 'sea', 'shelters', 'shot', 'should', 'soviet', 'spend', 'the', 'too', 'unknowingly', 'views', 'warriors', 'wished', 'womanly', 'young'],
-      ['Juliet', 'Limmershin', 'Pearl', 'bear', 'beat', 'being', 'branches', 'catch', 'country', 'czar', 'days', 'death', 'discoverers', 'dostoevsky', 'each', 'embodiment', 'ended', 'excessively', 'families', 'fanciful', 'father', 'food', 'forth', 'hoped', 'household', 'indigenous', 'international', 'islamic', 'monarchs', 'nearly', 'nowadays', 'organize', 'paid', 'playing', 'pond', 'pontellier', 'pretending', 'profits', 'protected', 'realized', 'religion', 'showed', 'surrogate', 'sweetmeats', 'taxation', 'thrilled', 'two', 'week', 'wizardments'],
-      ['Athena', 'Jackal', 'accomplished', 'accurate', 'again', 'ancestors', 'area', 'ate', 'attended', 'benefits', 'berlioz', 'blue', 'book', 'bought', 'committee', 'create', 'daughter', 'dead', 'dealt', 'experience', 'eyre', 'fair', 'fears', 'field', 'fiqh', 'fluttering', 'grade', 'heads', 'heroico', 'ideas', 'ignore', 'imprisonment', 'industrialized', 'inheritance', 'integration', 'interruptions', 'jewish', 'migrating', 'negotiate', 'political', 'pouted', 'proofs', 'riots', 'seas', 'segregation', 'serious', 'sounded', 'today', 'tried', 'villagers'],
-      ['Britain', 'Medgar', 'Seeonee', 'Yersinia', 'acquaintance', 'activists', 'affairs', 'agricultural', 'big', 'bold', 'breakdown', 'carrying', 'censorship', 'chapters', 'child', 'continued', 'council', 'disenfranchisement', 'early', 'everything', 'fighters', 'governments', 'grey', 'groups', 'haydn', 'he', 'imperialist', 'infrastructure', 'know', 'knowledge', 'leaves', 'nominated', 'occasions', 'pondered', 'precious', 'previous', 'prosperous', 'proteins', 'say', 'seals', 'skyinto', 'some', 'such', 'supplies', 'watershed', 'watson', 'weren', 'white', 'wonderful', 'writing'],
-      ['Liaodong', 'albeit', 'another', 'beaches', 'burrs', 'claimed', 'climb', 'clothing', 'conservation', 'couldn', 'countryside', 'cultivated', 'disappointed', 'education', 'employment', 'fleas', 'fourth', 'great', 'happen', 'hid', 'historians', 'historical', 'horse', 'its', 'latched', 'learn', 'logical', 'obeyed', 'odysseus', 'pastoral', 'photo', 'relentlessly', 'religious', 'sharia', 'shilling', 'shortest', 'show', 'slight', 'so', 'sought', 'think', 'this', 'throne', 'trap', 'treated', 'troops', 'unemployment', 'up', 'worth', 'years'],
-      ['Panther', 'advocated', 'appeared', 'aroused', 'autoimmune', 'automatically', 'bayou', 'begin', 'believe', 'ceased', 'charm', 'checked', 'eleven', 'engineering', 'english', 'finished', 'floor', 'frightened', 'going', 'governesses', 'guerilla', 'him', 'including', 'instituted', 'intellectual', 'knows', 'medieval', 'merrily', 'midday', 'might', 'organized', 'parents', 'paths', 'paycheck', 'prayed', 'prejudicial', 'read', 'recognize', 'restrictions', 'scholars', 'shared', 'sheep', 'someday', 'sound', 'teeth', 'them', 'threaded', 'touch', 'tragedies', 'whole'],
-      ['Mihail', 'Romanov', 'according', 'actual', 'beautiful', 'begged', 'breasts', 'british', 'buried', 'capital', 'caused', 'certainly', 'church', 'compound', 'corpses', 'created', 'delighted', 'denied', 'depending', 'descendants', 'deterred', 'discovery', 'dog', 'everyday', 'exhaustion', 'existence', 'expected', 'gray', 'knew', 'leave', 'marketable', 'means', 'mythology', 'peasants', 'preferences', 'prominent', 'prophecy', 'qur', 'rasputin', 'research', 'revolutionist', 'sell', 'similar', 'south', 'squander', 'subcontinent', 'thoughtful', 'threatened', 'through', 'utilizing'],
-      ['Arlington', 'Kenneth', 'allocate', 'already', 'baloo', 'blind', 'buddha', 'capitalist', 'civilian', 'claim', 'collection', 'conviction', 'deal', 'did', 'died', 'diseases', 'dishonest', 'dream', 'extended', 'fairly', 'fight', 'fourier', 'hands', 'imaginary', 'independence', 'knapsacks', 'laundryman', 'leader', 'magical', 'occupying', 'organization', 'other', 'parsimony', 'perceive', 'remained', 'restroom', 'said', 'saying', 'seen', 'separately', 'series', 'sixth', 'spread', 'thorns', 'thoughtfully', 'unbound', 'unhappily', 'violence', 'watched', 'with'],
-      ['alcorn', 'assistant', 'behavior', 'bubbling', 'choose', 'coincidentally', 'comb', 'conversation', 'd', 'designed', 'didn', 'differently', 'disappointment', 'effects', 'engaged', 'exasperated', 'flood', 'foolish', 'friends', 'ground', 'husband', 'improvements', 'mang', 'maps', 'military', 'mother', 'much', 'nucleus', 'october', 'opportunities', 'pads', 'pantheon', 'pestis', 'pools', 'poorly', 'principle', 'realms', 'reasoning', 'resulted', 'rosalind', 'round', 'see', 'shortages', 'shows', 'technology', 'threat', 'trails', 'weak', 'who', 'year']
-    ];
+    let wordFeatures = {};
+
+    fetch("word_features.json").then(response => response.json()).then(data => {
+        wordFeatures = data;
+      })
+      .catch(error => {
+        console.error("Failed to load word features:", error);
+      });
+
     let currentIndex = 0;
     let startTime = Date.now();
     let responses = [];
@@ -275,7 +259,8 @@
           participants_url: participantUrl,
           timestamp: formatTimestamp(new Date()),
           rating_sequence: [],
-          dataset_index: getDatasetIndex(participantId) + 1 // 1-based index for readability
+          dataset_index: getDatasetIndex(participantId) + 1 ,
+          features: wordFeatures[words[index].toLowerCase()] || {}
         };
       }
     }
@@ -525,6 +510,7 @@
       }
     }
 
+
     function submitResults() {
       const submitBtn = document.getElementById("submit-btn");
       submitBtn.disabled = true;
@@ -538,9 +524,42 @@
       })
       .then(res => res.text())
       .then(response => {
+        // تحلیل سخت‌ترین کلمات:
+        const hardWords = responses.filter(r => {
+          const last = r.difficulty?.split(',').slice(-1)[0];
+          return last === "3" || last === "4";
+        });
+
+        let count = { long: 0, diagraphs: 0, silent_letters: 0 };
+        hardWords.forEach(r => {
+          if (r.features.long_words) count.long++;
+          if (r.features.diagraphs) count.diagraphs++;
+          if (r.features.silent_letters) count.silent_letters++;
+        });
+
+        let feedback = "<h3>You had difficulty reading:</h3><ul>";
+        let found = false;
+        if (count.long > 3) {
+          feedback += "<li>Long words</li>";
+          found = true;
+        }
+        if (count.diagraphs > 3) {
+          feedback += "<li>Words with diagraphs (e.g. 'th', 'ph')</li>";
+          found = true;
+        }
+        if (count.silent_letters > 3) {
+          feedback += "<li>Words with silent letters (e.g. 'knight', 'doubt')</li>";
+          found = true;
+        }
+        if (!found) {
+          feedback += "<li>No clear pattern detected in difficult words.</li>";
+        }
+        feedback += "</ul>";
+
         document.body.innerHTML = `
-          <div style="text-align: center; margin-top: 150px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-top: 100px; font-family: Arial, sans-serif;">
             <h1>Thank you for your participation!</h1>
+            <div style="font-size: 18px; margin-top: 40px;">${feedback}</div>
           </div>
         `;
       })
@@ -549,13 +568,13 @@
         console.error("Error details:", error);
 
         document.body.innerHTML = `
-          <div style="text-align: center; margin-top: 150px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-top: 100px; font-family: Arial, sans-serif;">
             <h1>Thank you for your participation!</h1>
+            <p>There was an issue submitting your data, but your session has been completed.</p>
           </div>
         `;
       });
     }
-
     document.addEventListener('keydown', (event) => {
       const key = event.key;
       

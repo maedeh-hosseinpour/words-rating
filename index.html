@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Word Difficulty Rating</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+      background: #fafafa;
+    }
+
+    #word {
+      width: 520px;
+      height: 100px;
+      margin: 20px auto;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 48px;
+    }
+
+    .word-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .rating-button, #start-btn {
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      padding: 16px;
+      margin: 8px;
+      min-width: 115px;
+      cursor: pointer;
+      border: solid 1px #e7e7e7;
+      border-radius: 2px;
+      background-color: #fff;
+      transition: background-color 0.2s;
+    }
+
+    .rating-button:hover:not(:disabled),
+    #start-btn:hover:enabled {
+      background-color: #fafafa;
+      border: solid 1px #ccc;
+    }
+
+    .rating-button:disabled,
+    #start-btn:disabled,
+    #next-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .rating-button.selected {
+      background-color: #e0e0e0;
+      border: solid 1px #999;
+    }
+
+    .letter.selectable { 
+      cursor: pointer; 
+      transition: color 0.2s, font-size 0.2s;
+    }
+    .letter.selectable:hover { color: rgb(20, 88, 197); }
+    .letter.clicked { 
+      color: rgb(200, 17, 17); 
+      font-weight: bold;
+      font-size: 52px; 
+    }
+
+    #next-btn, #submit-btn {
+      margin: 20px 10px 0;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+    }
+
+    #next-btn:hover:not(:disabled), #submit-btn:hover:not(:disabled) {
+      background-color: #f5f5f5;
+    }
+
+    #rating-instruction {
+      font-size: 17px;
+      color: #555;
+      margin-top: 15px;
+    }
+
+    .clear-text {
+      color: gray;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    #participantId {
+      width: 400px;
+      height: 20px;
+      font-size: 16px;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    #text-explanation {
+      display: none;
+      margin-top: 25px;
+    }
+
+    #difficultyReason {
+      width: 510px;
+      height: 65px;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 6px;
+      resize: vertical;
+    }
+
+    #no-letter-option {
+      font-size: 14px;
+      color: #555;
+      margin-top: 35px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    #no-letter-option:hover {
+      color: #333;
+    }
+
+    .error-message {
+      color: #d32f2f;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .success-message {
+      color: #2e7d32;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="id-input-section">
+    <h2 for="participantId">Enter your Prolific ID:</h2><br>
+    <input type="text" id="participantId" placeholder="Enter your Prolific ID"
+           pattern="[A-Za-z0-9]{22,24}" maxlength="24" minlength="22" required
+           title="Please enter a valid 22–24 character Prolific ID."
+           oninput="validateProlificId()"><br><br>
+    <button id="start-btn" onclick="startTask()" disabled>Start</button>
+  </div>
+
+  <div id="main-task" style="display: none;">
+    <h2>What is your level of difficulty in reading this word?</h2>
+    <div id="word"></div>
+
+    <div id="rating-buttons">
+      <button class="rating-button" data-rating="1" onclick="rateWord(1)">Very Easy (1)</button>
+      <button class="rating-button" data-rating="2" onclick="rateWord(2)">Easy (2)</button>
+      <button class="rating-button" data-rating="3" onclick="rateWord(3)">Hard (3)</button>
+      <button class="rating-button" data-rating="4" onclick="rateWord(4)">Very Hard (4)</button>
+    </div>
+    
+    <div id="rating-instruction" style="display: none;">
+      Click the <b>letters</b> in the word above that you found hard to read. <span id="clear" class="clear-text">[reset selected letters]</span>
+    </div>
+    
+    <div id="no-letter-option" style="display: none;">If there is no specific letter to select, <u>click here to explain why</u></div>
+    
+    <div id="text-explanation" style="display: none;">
+      <textarea id="difficultyReason" placeholder="Please explain why this word is hard to read (minimum 10 characters)." 
+          oninput="checkNextButtonState()" maxlength="500"></textarea>
+      <div id="char-count" style="font-size: 12px; color: #666; margin-top: 5px;">0/500 characters (minimum 10)</div>
+    </div>
+    
+    <div id="error-container"></div>
+    
+    <div>
+      <button id="next-btn" onclick="goToNextWord()" disabled>Proceed to the next word</button>
+      <button id="submit-btn" onclick="submitResults()" style="display: none;">Submit All Responses</button>
+    </div>
+  </div>
+
+  <script>
+    let participantId = "";
+    let words = []; 
+    const datasets = [
+      ['Manchuria', 'arithmetic', 'bad', 'barriers', 'beauty', 'brothers', 'clowning', 'competition', 'delicate', 'depression', 'divided', 'drained', 'eight', 'enough', 'for', 'foresaw', 'goddess', 'group', 'historically', 'immigrating', 'information', 'kites', 'mean', 'mobility', 'molecular', 'neatly', 'painting', 'peninsula', 'penniless', 'potentially', 'purr', 'red', 'registration', 'religions', 'remaining', 'rigging', 'shorter', 'stood', 'supported', 'teaching', 'tests', 'their', 'topple', 'turkish', 'whatever', 'which', 'worshiped', 'you', 'your'],
+      ['Guerrillero', 'Tabaqui', 'Tsushima', 'babies', 'beach', 'biophysicist', 'brood', 'centuries', 'change', 'clothed', 'desegregate', 'disease', 'east', 'easy', 'elsewhere', 'emperor', 'enrollees', 'european', 'exclusion', 'fights', 'globe', 'historian', 'house', 'immigration', 'lie', 'methods', 'mongol', 'nothing', 'odd', 'operations', 'our', 'overthrew', 'permission', 'played', 'possessions', 'protecting', 'really', 'reducing', 'restrain', 'scientific', 'shortly', 'symmetrical', 'tablets', 'theirs', 'things', 'those', 'though', 'vanished', 'weigh'],
+      ['Mississippi', 'Ratignolle', 'Symphonie', 'beliefs', 'believed', 'cartography', 'cell', 'character', 'charms', 'circular', 'clothes', 'compromise', 'conscripted', 'crimean', 'deaths', 'descended', 'distinguish', 'do', 'ears', 'earth', 'eventually', 'good', 'hand', 'hard', 'hedges', 'high', 'hour', 'iceman', 'institute', 'interpreted', 'lairs', 'main', 'married', 'math', 'originated', 'plestcheiev', 'population', 'proudhon', 'provisional', 'rallying', 'rapped', 'search', 'sergeant', 'stories', 'than', 'thread', 'troubles', 'way', 'wrote'],
+      ['Korea', 'addition', 'afternoons', 'arabic', 'argument', 'benefitted', 'bird', 'bring', 'counterexamples', 'countries', 'dear', 'disappeared', 'drowsy', 'elaborated', 'exceedingly', 'experts', 'exquisite', 'fantastique', 'generally', 'guaranteed', 'hair', 'happened', 'huts', 'intention', 'investigations', 'knock', 'knowing', 'lead', 'malnourished', 'prevail', 'real', 'resorted', 'school', 'scientists', 'servants', 'shaped', 'sharp', 'shelter', 'short', 'straight', 'studies', 'suggests', 'theorem', 'third', 'three', 'versailles', 'vladivostok', 'writes', 'written'],
+      ['Myanmar', 'against', 'barred', 'birds', 'bound', 'by', 'cauldron', 'chinese', 'classical', 'clear', 'commuted', 'crystallography', 'cunningly', 'depth', 'drainage', 'dwelt', 'eat', 'elaborate', 'established', 'estimates', 'explain', 'eyes', 'fighting', 'french', 'guevara', 'hadn', 'heroes', 'humanity', 'invisible', 'iota', 'looked', 'male', 'motorcycle', 'opposed', 'president', 'pride', 'received', 'rejected', 'says', 'sources', 'speak', 'suppression', 'telomeres', 'thereupon', 'they', 'trapp', 'vulnerable', 'weavers', 'while'],
+      ['admirable', 'application', 'artistotle', 'assassinated', 'assassination', 'because', 'bering', 'bomb', 'buy', 'bygone', 'campgrounds', 'carousing', 'daily', 'dividing', 'dominated', 'efface', 'ethical', 'fashionable', 'fools', 'fruits', 'head', 'health', 'help', 'individuals', 'influence', 'invented', 'lips', 'no', 'obliged', 'ordeal', 'pair', 'pounds', 'ray', 'reality', 'sapphires', 'schools', 'several', 'sewed', 'she', 'shoulders', 'specific', 'speechless', 'tenement', 'theatre', 'throughout', 'traditions', 'truth', 'whenever', 'would'],
+      ['Maurice', 'Nicholas', 'Novastoshnah', 'american', 'around', 'banned', 'bequeathed', 'build', 'communist', 'contains', 'couple', 'czarist', 'develop', 'developing', 'difficult', 'dourov', 'europeans', 'extravagantly', 'foods', 'gogol', 'government', 'happens', 'interpretations', 'learned', 'looms', 'may', 'opportunity', 'original', 'orleans', 'partition', 'rights', 'rodents', 'rogues', 'rooms', 'shere', 'something', 'teachings', 'thereafter', 'these', 'trouble', 'ultimately', 'unemployed', 'weight', 'what', 'whether', 'whither', 'worship', 'wouldn', 'yourselves'],
+      ['Argentina', 'Bangladesh', 'Blenheim', 'about', 'accustomed', 'allowed', 'bacterium', 'brought', 'ceylon', 'che', 'condemned', 'conditions', 'contributed', 'contribution', 'conversations', 'court', 'crick', 'drop', 'fascinating', 'generations', 'happy', 'hear', 'heaved', 'helped', 'higher', 'hundred', 'immediately', 'isle', 'known', 'least', 'literacy', 'mane', 'masquerades', 'mathematics', 'medger', 'north', 'pieces', 'possibility', 'pretexts', 'proof', 'reading', 'revolutions', 'rich', 'ships', 'surrounded', 'there', 'thousands', 'threes', 'together'],
+      ['actually', 'aloud', 'americans', 'background', 'baring', 'begun', 'books', 'changed', 'cherries', 'chimney', 'conclusion', 'damaged', 'delicious', 'either', 'elementary', 'examination', 'falsehoods', 'february', 'fingal', 'genetic', 'god', 'heart', 'heroine', 'huge', 'instead', 'migration', 'money', 'originally', 'paved', 'peanut', 'perfection', 'ponds', 'radical', 'repeat', 'revolution', 'right', 'roslin', 'sloth', 'steamer', 'studied', 'taught', 'teach', 'teacher', 'to', 'tradition', 'unfortunately', 'unmarried', 'veteran', 'without'],
+      ['Roosevelt', 'Turkey', 'agnes', 'although', 'animal', 'applied', 'attempts', 'bagheera', 'benevolent', 'boycotts', 'causes', 'clouds', 'companions', 'conflicts', 'deliciously', 'discipline', 'earning', 'execution', 'forgotten', 'fought', 'found', 'furthermore', 'go', 'gold', 'idolized', 'important', 'inquired', 'japanese', 'kerensky', 'mammary', 'miser', 'nervous', 'ocean', 'oh', 'outpaced', 'paper', 'position', 'published', 'reader', 'room', 'sanitation', 'scoop', 'thrown', 'train', 'understand', 'university', 'watching', 'whose', 'yours'],
+      ['Raymond', 'Schubert', 'agamemnon', 'always', 'anything', 'apparent', 'architecture', 'beethoven', 'carelessly', 'charges', 'corps', 'could', 'earned', 'eaten', 'economic', 'featured', 'graduating', 'heap', 'helping', 'hindu', 'impossibly', 'led', 'meals', 'medical', 'mound', 'mourned', 'neither', 'obviously', 'participated', 'persecution', 'projects', 'reasons', 'recorded', 'representation', 'russian', 'sailors', 'scholar', 'semyonovsky', 'society', 'soldiers', 'son', 'soon', 'stockholder', 'temperament', 'then', 'took', 'training', 'weave', 'wren'],
+      ['Mendelssohn', 'areas', 'began', 'both', 'bourgeoisie', 'changes', 'characters', 'children', 'communities', 'controversial', 'coup', 'curiously', 'day', 'due', 'evers', 'exciting', 'extraordinary', 'famous', 'genetically', 'had', 'impractical', 'inequality', 'influential', 'interested', 'interpreting', 'length', 'ministering', 'mukden', 'musicians', 'myths', 'night', 'others', 'personality', 'plane', 'potential', 'pray', 'prophets', 'qing', 'spanish', 'stare', 'strait', 'suitors', 'tale', 'thimble', 'thought', 'thus', 'transformation', 'whom', 'why'],
+      ['Paul', 'accommodation', 'acknowledges', 'backgrounds', 'be', 'busily', 'catapulted', 'chiquita', 'clipped', 'coats', 'complicated', 'designer', 'different', 'disagreeable', 'dish', 'four', 'goodness', 'grand', 'implications', 'infested', 'knocks', 'look', 'manhood', 'meant', 'month', 'months', 'nationally', 'new', 'officials', 'parts', 'path', 'plunged', 'poor', 'quaint', 'railway', 'republic', 'routes', 'science', 'seal', 'secretary', 'serfdom', 'snapped', 'traits', 'unhappy', 'upper', 'victories', 'ways', 'wealth', 'when'],
+      ['Byelinsky', 'adjusted', 'artists', 'assumptions', 'away', 'based', 'becoming', 'benefit', 'birth', 'blend', 'brain', 'branch', 'deep', 'discrimination', 'does', 'door', 'engels', 'faithfully', 'flippers', 'gain', 'grief', 'heal', 'hebrides', 'held', 'here', 'hidden', 'increase', 'interests', 'merchant', 'milkman', 'mite', 'none', 'pandemic', 'perhaps', 'proletariat', 'regular', 'repealed', 'shirts', 'splashed', 'stool', 'stout', 'structural', 'symphony', 'that', 'themselves', 'thing', 'wealthy', 'where', 'wood'],
+      ['Arthur', 'Hyaena', 'Telemachos', 'afraid', 'appearance', 'beginning', 'bid', 'brother', 'capability', 'ching', 'colonized', 'decided', 'decolonize', 'double', 'exception', 'fish', 'gods', 'governess', 'greatly', 'illiterate', 'irrigation', 'laborer', 'looks', 'loud', 'lounging', 'mowgli', 'national', 'numerous', 'out', 'parliament', 'peasant', 'pupil', 'ready', 'role', 'russians', 'sea', 'shelters', 'shot', 'should', 'soviet', 'spend', 'the', 'too', 'unknowingly', 'views', 'warriors', 'wished', 'womanly', 'young'],
+      ['Juliet', 'Limmershin', 'Pearl', 'bear', 'beat', 'being', 'branches', 'catch', 'country', 'czar', 'days', 'death', 'discoverers', 'dostoevsky', 'each', 'embodiment', 'ended', 'excessively', 'families', 'fanciful', 'father', 'food', 'forth', 'hoped', 'household', 'indigenous', 'international', 'islamic', 'monarchs', 'nearly', 'nowadays', 'organize', 'paid', 'playing', 'pond', 'pontellier', 'pretending', 'profits', 'protected', 'realized', 'religion', 'showed', 'surrogate', 'sweetmeats', 'taxation', 'thrilled', 'two', 'week', 'wizardments'],
+      ['Athena', 'Jackal', 'accomplished', 'accurate', 'again', 'ancestors', 'area', 'ate', 'attended', 'benefits', 'berlioz', 'blue', 'book', 'bought', 'committee', 'create', 'daughter', 'dead', 'dealt', 'experience', 'eyre', 'fair', 'fears', 'field', 'fiqh', 'fluttering', 'grade', 'heads', 'heroico', 'ideas', 'ignore', 'imprisonment', 'industrialized', 'inheritance', 'integration', 'interruptions', 'jewish', 'migrating', 'negotiate', 'political', 'pouted', 'proofs', 'riots', 'seas', 'segregation', 'serious', 'sounded', 'today', 'tried', 'villagers'],
+      ['Britain', 'Medgar', 'Seeonee', 'Yersinia', 'acquaintance', 'activists', 'affairs', 'agricultural', 'big', 'bold', 'breakdown', 'carrying', 'censorship', 'chapters', 'child', 'continued', 'council', 'disenfranchisement', 'early', 'everything', 'fighters', 'governments', 'grey', 'groups', 'haydn', 'he', 'imperialist', 'infrastructure', 'know', 'knowledge', 'leaves', 'nominated', 'occasions', 'pondered', 'precious', 'previous', 'prosperous', 'proteins', 'say', 'seals', 'skyinto', 'some', 'such', 'supplies', 'watershed', 'watson', 'weren', 'white', 'wonderful', 'writing'],
+      ['Liaodong', 'albeit', 'another', 'beaches', 'burrs', 'claimed', 'climb', 'clothing', 'conservation', 'couldn', 'countryside', 'cultivated', 'disappointed', 'education', 'employment', 'fleas', 'fourth', 'great', 'happen', 'hid', 'historians', 'historical', 'horse', 'its', 'latched', 'learn', 'logical', 'obeyed', 'odysseus', 'pastoral', 'photo', 'relentlessly', 'religious', 'sharia', 'shilling', 'shortest', 'show', 'slight', 'so', 'sought', 'think', 'this', 'throne', 'trap', 'treated', 'troops', 'unemployment', 'up', 'worth', 'years'],
+      ['Panther', 'advocated', 'appeared', 'aroused', 'autoimmune', 'automatically', 'bayou', 'begin', 'believe', 'ceased', 'charm', 'checked', 'eleven', 'engineering', 'english', 'finished', 'floor', 'frightened', 'going', 'governesses', 'guerilla', 'him', 'including', 'instituted', 'intellectual', 'knows', 'medieval', 'merrily', 'midday', 'might', 'organized', 'parents', 'paths', 'paycheck', 'prayed', 'prejudicial', 'read', 'recognize', 'restrictions', 'scholars', 'shared', 'sheep', 'someday', 'sound', 'teeth', 'them', 'threaded', 'touch', 'tragedies', 'whole'],
+      ['Mihail', 'Romanov', 'according', 'actual', 'beautiful', 'begged', 'breasts', 'british', 'buried', 'capital', 'caused', 'certainly', 'church', 'compound', 'corpses', 'created', 'delighted', 'denied', 'depending', 'descendants', 'deterred', 'discovery', 'dog', 'everyday', 'exhaustion', 'existence', 'expected', 'gray', 'knew', 'leave', 'marketable', 'means', 'mythology', 'peasants', 'preferences', 'prominent', 'prophecy', 'qur', 'rasputin', 'research', 'revolutionist', 'sell', 'similar', 'south', 'squander', 'subcontinent', 'thoughtful', 'threatened', 'through', 'utilizing'],
+      ['Arlington', 'Kenneth', 'allocate', 'already', 'baloo', 'blind', 'buddha', 'capitalist', 'civilian', 'claim', 'collection', 'conviction', 'deal', 'did', 'died', 'diseases', 'dishonest', 'dream', 'extended', 'fairly', 'fight', 'fourier', 'hands', 'imaginary', 'independence', 'knapsacks', 'laundryman', 'leader', 'magical', 'occupying', 'organization', 'other', 'parsimony', 'perceive', 'remained', 'restroom', 'said', 'saying', 'seen', 'separately', 'series', 'sixth', 'spread', 'thorns', 'thoughtfully', 'unbound', 'unhappily', 'violence', 'watched', 'with'],
+      ['alcorn', 'assistant', 'behavior', 'bubbling', 'choose', 'coincidentally', 'comb', 'conversation', 'd', 'designed', 'didn', 'differently', 'disappointment', 'effects', 'engaged', 'exasperated', 'flood', 'foolish', 'friends', 'ground', 'husband', 'improvements', 'mang', 'maps', 'military', 'mother', 'much', 'nucleus', 'october', 'opportunities', 'pads', 'pantheon', 'pestis', 'pools', 'poorly', 'principle', 'realms', 'reasoning', 'resulted', 'rosalind', 'round', 'see', 'shortages', 'shows', 'technology', 'threat', 'trails', 'weak', 'who', 'year']
+    ];
+    let currentIndex = 0;
+    let startTime = Date.now();
+    let responses = [];
+    let currentPhase = "rating";
+    const participantUrl = document.referrer || "Direct";
+    const MIN_EXPLANATION_LENGTH = 10;
+
+    function getDatasetIndex(prolificId) {
+      let hash = 0;
+      for (let i = 0; i < prolificId.length; i++) {
+        hash = (hash * 31 + prolificId.charCodeAt(i)) % datasets.length;
+      }
+      return hash;
+    }
+
+    function validateProlificId() {
+      const input = document.getElementById("participantId").value.trim();
+      const isValid = /^[A-Za-z0-9]{22,24}$/.test(input);
+      const startBtn = document.getElementById("start-btn");
+      startBtn.disabled = !isValid;
+    }
+
+    function startTask() {
+      const input = document.getElementById("participantId").value.trim();
+      participantId = input;
+
+      const datasetIndex = getDatasetIndex(participantId);
+      words = datasets[datasetIndex]; // Set words to the selected dataset
+      document.getElementById("id-input-section").style.display = "none";
+      document.getElementById("main-task").style.display = "block";
+      showWord();
+    }
+
+    function formatTimestamp(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function initializeResponse(index) {
+      if (!responses[index]) {
+        responses[index] = {
+          word: words[index],
+          clicked_letters: [],
+          difficulty: null,
+          time_seconds: null,
+          reason: "",
+          participants_url: participantUrl,
+          timestamp: formatTimestamp(new Date()),
+          rating_sequence: [],
+          dataset_index: getDatasetIndex(participantId) + 1 // 1-based index for readability
+        };
+      }
+    }
+
+    function showWord() {
+      const wordBox = document.getElementById("word");
+      const instruction = document.getElementById("rating-instruction");
+      const nextBtn = document.getElementById("next-btn");
+      const submitBtn = document.getElementById("submit-btn");
+      const explanationBox = document.getElementById("text-explanation");
+      const noLetterOption = document.getElementById("no-letter-option");
+      const reasonInput = document.getElementById("difficultyReason");
+      const errorContainer = document.getElementById("error-container");
+
+      wordBox.innerHTML = "";
+      instruction.style.display = "none";
+      nextBtn.disabled = true;
+      explanationBox.style.display = "none";
+      noLetterOption.style.display = "none";
+      reasonInput.value = "";
+      errorContainer.innerHTML = "";
+      currentPhase = "rating";
+      
+      document.querySelectorAll(".rating-button").forEach(btn => {
+        btn.classList.remove("selected");
+        btn.disabled = false;
+        btn.style.display = "inline-block";
+      });
+
+      if (currentIndex < words.length) {
+        const currentWord = words[currentIndex];
+        const wordContainer = document.createElement("div");
+        wordContainer.classList.add("word-container");
+
+        [...currentWord].forEach((char, index) => {
+          const span = document.createElement("span");
+          span.textContent = char;
+          span.classList.add("letter");
+          span.dataset.index = index;
+          wordContainer.appendChild(span);
+        });
+
+        wordBox.appendChild(wordContainer);
+        
+        initializeResponse(currentIndex);
+        
+        submitBtn.style.display = "none";
+        nextBtn.style.display = "inline-block";
+        startTime = Date.now();
+      } else {
+        wordBox.innerHTML = "<h6>All words completed!</h6>";
+        submitBtn.style.display = "inline-block";
+        nextBtn.style.display = "none";
+        document.querySelectorAll(".rating-button").forEach(btn => btn.style.display = "none");
+      }
+    }
+
+    function clearAllSelections() {
+      const letters = document.querySelectorAll("#word .letter");
+      letters.forEach(span => {
+        span.classList.remove("selectable", "clicked");
+        span.onclick = null;
+      });
+      
+      document.getElementById("difficultyReason").value = "";
+      updateCharCount();
+      
+      if (responses[currentIndex]) {
+        responses[currentIndex].clicked_letters = [];
+        responses[currentIndex].reason = "";
+      }
+    }
+
+    function rateWord(rating) {
+      const timeTaken = (Date.now() - startTime) / 1000;
+      
+      document.querySelectorAll(".rating-button").forEach(btn => {
+        btn.classList.remove("selected");
+        if (parseInt(btn.dataset.rating) === rating) {
+          btn.classList.add("selected");
+        }
+      });
+
+      initializeResponse(currentIndex);
+      
+      clearAllSelections();
+      
+      responses[currentIndex].rating_sequence.push(rating);
+      responses[currentIndex].difficulty = responses[currentIndex].rating_sequence.join(',');
+      responses[currentIndex].time_seconds = timeTaken;
+
+      document.getElementById("rating-instruction").style.display = "none";
+      document.getElementById("no-letter-option").style.display = "none";
+      document.getElementById("text-explanation").style.display = "none";
+      
+      if (rating <= 2) {
+        currentPhase = "rating";
+        document.getElementById("next-btn").disabled = false;
+      } else {
+        currentPhase = "letter-selection";
+        document.getElementById("rating-instruction").style.display = "block";
+        document.getElementById("no-letter-option").style.display = "block";
+        enableLetterSelection();
+        document.getElementById("next-btn").disabled = true;
+      }
+      
+      clearError();
+    }
+
+    function enableLetterSelection() {
+      const letters = document.querySelectorAll("#word .letter");
+      letters.forEach(span => {
+        span.classList.add("selectable");
+        span.onclick = () => {
+          const idx = parseInt(span.dataset.index);
+          if (span.classList.contains("clicked")) {
+            span.classList.remove("clicked");
+            responses[currentIndex].clicked_letters = responses[currentIndex].clicked_letters.filter(l => l.position !== idx);
+          } else {
+            span.classList.add("clicked");
+            responses[currentIndex].clicked_letters.push({ 
+              letter: span.textContent, 
+              position: idx 
+            });
+          }
+          checkNextButtonState();
+        };
+      });
+      
+      const clearLink = document.getElementById("clear");
+      if (clearLink) {
+        clearLink.onclick = resetLetterSelection;
+      }
+    }
+
+    function resetLetterSelection() {
+      const letters = document.querySelectorAll("#word .letter");
+      letters.forEach(span => span.classList.remove("clicked"));
+      responses[currentIndex].clicked_letters = [];
+      
+      document.getElementById("text-explanation").style.display = "none";
+      document.getElementById("difficultyReason").value = "";
+      responses[currentIndex].reason = "";
+      
+      currentPhase = "letter-selection";
+      document.getElementById("rating-instruction").style.display = "block";
+      document.getElementById("rating-instruction").innerHTML = 'Click the <b>letters</b> in the word above that you found hard to read. <span id="clear" class="clear-text">[reset selected letters]</span>';
+      document.getElementById("no-letter-option").style.display = "block";
+      
+      enableLetterSelection();
+      
+      checkNextButtonState();
+    }
+
+    function clearClicks() {
+      resetLetterSelection();
+    }
+
+    function showExplanationBox() {
+      currentPhase = "text-explanation";
+      const explanationBox = document.getElementById("text-explanation");
+      const noLetterOption = document.getElementById("no-letter-option");
+      const instruction = document.getElementById("rating-instruction");
+      
+      explanationBox.style.display = "block";
+      noLetterOption.style.display = "none";
+      instruction.innerHTML = "Please explain why this word is hard to read: <span id='clear' class='clear-text'>[reset and go back to letter selection]</span>";
+      
+      const letters = document.querySelectorAll("#word .letter");
+      letters.forEach(span => {
+        span.classList.remove("selectable");
+        span.onclick = null;
+      });
+      
+      document.getElementById("difficultyReason").focus();
+      
+      const clearLink = document.getElementById("clear");
+      if (clearLink) {
+        clearLink.onclick = resetLetterSelection;
+      }
+      
+      updateCharCount();
+      checkNextButtonState();
+    }
+
+    function updateCharCount() {
+      const reasonText = document.getElementById("difficultyReason").value;
+      const charCount = document.getElementById("char-count");
+      const remaining = 500 - reasonText.length;
+      const isValid = reasonText.length >= MIN_EXPLANATION_LENGTH;
+      
+      charCount.textContent = `${reasonText.length}/500 characters (minimum ${MIN_EXPLANATION_LENGTH})`;
+      charCount.style.color = isValid ? "#2e7d32" : "#666";
+    }
+
+    function checkNextButtonState() {
+      const nextBtn = document.getElementById("next-btn");
+      let canProceed = false;
+      
+      if (currentPhase === "rating") {
+        canProceed = responses[currentIndex] && responses[currentIndex].difficulty <= 2;
+      } else if (currentPhase === "letter-selection") {
+        canProceed = responses[currentIndex].clicked_letters.length > 0;
+      } else if (currentPhase === "text-explanation") {
+        const reasonText = document.getElementById("difficultyReason").value.trim();
+        canProceed = reasonText.length >= MIN_EXPLANATION_LENGTH;
+        updateCharCount();
+      }
+      
+      nextBtn.disabled = !canProceed;
+    }
+
+    function showError(message) {
+      const errorContainer = document.getElementById("error-container");
+      errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+    }
+
+    function clearError() {
+      const errorContainer = document.getElementById("error-container");
+      errorContainer.innerHTML = "";
+    }
+
+    function goToNextWord() {
+      if (currentPhase === "text-explanation") {
+        const reasonText = document.getElementById("difficultyReason").value.trim();
+        if (reasonText.length < MIN_EXPLANATION_LENGTH) {
+          showError(`Please provide at least ${MIN_EXPLANATION_LENGTH} characters of explanation.`);
+          return;
+        }
+        responses[currentIndex].reason = reasonText;
+      } else if (currentPhase === "letter-selection" && responses[currentIndex].clicked_letters.length === 0) {
+        showError("Please select at least one letter or provide a text explanation.");
+        return;
+      }
+      
+      currentIndex++;
+      showWord();
+    }
+
+    function getRatingText(rating) {
+      switch (rating) {
+        case 1: return "Very Easy";
+        case 2: return "Easy";
+        case 3: return "Hard";
+        case 4: return "Very Hard";
+        default: return "";
+      }
+    }
+
+    function submitResults() {
+      const submitBtn = document.getElementById("submit-btn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+
+      const url = `https://script.google.com/macros/s/AKfycbwtxXb5rlg_AQ8C2HWC-oOFEvgJTcd3QiHLGUllwuy9NPVpRM8bf04A9pgMsRifVx0l/exec?participant=${participantId}`;
+
+      fetch(url, {
+        method: "POST",
+        body: JSON.stringify(responses)
+      })
+      .then(res => res.text())
+      .then(response => {
+        document.body.innerHTML = `
+          <div style="text-align: center; margin-top: 150px; font-family: Arial, sans-serif;">
+            <h1>Thank you for your participation!</h1>
+          </div>
+        `;
+      })
+      .catch(error => {
+        console.warn("Submission may have failed.");
+        console.error("Error details:", error);
+
+        document.body.innerHTML = `
+          <div style="text-align: center; margin-top: 150px; font-family: Arial, sans-serif;">
+            <h1>Thank you for your participation!</h1>
+          </div>
+        `;
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      const key = event.key;
+      
+      if (key === 'Enter') {
+        const idInputSection = document.getElementById("id-input-section");
+        const mainTask = document.getElementById("main-task");
+        
+        if (idInputSection.style.display !== "none") {
+          const startBtn = document.getElementById("start-btn");
+          if (!startBtn.disabled) {
+            event.preventDefault();
+            startTask();
+            return;
+          }
+        }
+        
+        if (mainTask.style.display === "block") {
+          if (event.target.tagName === 'TEXTAREA') return;
+          
+          const nextBtn = document.getElementById("next-btn");
+          const submitBtn = document.getElementById("submit-btn");
+          
+          if (!nextBtn.disabled && nextBtn.style.display !== "none") {
+            event.preventDefault();
+            goToNextWord();
+          } else if (!submitBtn.disabled && submitBtn.style.display !== "none") {
+            event.preventDefault();
+            submitResults();
+          }
+        }
+      }
+      
+      const mainTask = document.getElementById("main-task");
+      if (mainTask.style.display !== "block") return;
+      
+      if (['1', '2', '3', '4'].includes(key)) {
+        if (event.target.tagName === 'TEXTAREA') return;
+        
+        const rating = parseInt(key);
+        if (currentIndex < words.length) {
+          rateWord(rating);
+        }
+      }
+    });
+
+    document.getElementById("difficultyReason").addEventListener('input', updateCharCount);
+
+    document.getElementById("no-letter-option").onclick = showExplanationBox;
+  </script>
+</body>
+</html>

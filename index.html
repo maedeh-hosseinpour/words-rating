@@ -149,6 +149,10 @@
       font-size: 16px;
       margin-top: 10px;
     }
+
+    .task-completed #difficulty-question {
+      display: none !important;
+}
   </style>
 </head>
 <body>
@@ -163,7 +167,7 @@
   </div>
 
   <div id="main-task" style="display: none;">
-    <h2>What is your level of difficulty in reading this word?</h2>
+    <h2 id="difficulty-question">What is your level of difficulty in reading this word?</h2>
     <div id="word"></div>
 
     <div id="rating-buttons">
@@ -293,6 +297,7 @@
         startTime = Date.now();
       } else {
         // Task completed
+        document.getElementById("main-task").classList.add("task-completed");
         wordBox.innerHTML = "<h6>All words completed!</h6>";
         submitBtn.style.display = "inline-block";
         nextBtn.style.display = "none";

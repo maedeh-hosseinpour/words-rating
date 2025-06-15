@@ -72,7 +72,7 @@
     .letter.clicked { 
       color: rgb(200, 17, 17); 
       font-weight: bold;
-      font-size: 52px; 
+      font-size: 52px; /* Slightly larger than base 48px */
     }
 
     #next-btn, #submit-btn {
@@ -195,46 +195,13 @@
 
   <script>
     let participantId = "";
-    let words = []; 
-    const datasets = [
-      ['Manchuria', 'arithmetic', 'bad', 'barriers', 'beauty', 'brothers', 'clowning', 'competition', 'delicate', 'depression', 'divided', 'drained', 'eight', 'enough', 'for', 'foresaw', 'goddess', 'group', 'historically', 'immigrating', 'information', 'kites', 'mean', 'mobility', 'molecular', 'neatly', 'painting', 'peninsula', 'penniless', 'potentially', 'purr', 'red', 'registration', 'religions', 'remaining', 'rigging', 'shorter', 'stood', 'supported', 'teaching', 'tests', 'their', 'topple', 'turkish', 'whatever', 'which', 'worshiped', 'you', 'your'],
-      ['Guerrillero', 'Tabaqui', 'Tsushima', 'babies', 'beach', 'biophysicist', 'brood', 'centuries', 'change', 'clothed', 'desegregate', 'disease', 'east', 'easy', 'elsewhere', 'emperor', 'enrollees', 'european', 'exclusion', 'fights', 'globe', 'historian', 'house', 'immigration', 'lie', 'methods', 'mongol', 'nothing', 'odd', 'operations', 'our', 'overthrew', 'permission', 'played', 'possessions', 'protecting', 'really', 'reducing', 'restrain', 'scientific', 'shortly', 'symmetrical', 'tablets', 'theirs', 'things', 'those', 'though', 'vanished', 'weigh'],
-      ['Mississippi', 'Ratignolle', 'Symphonie', 'beliefs', 'believed', 'cartography', 'cell', 'character', 'charms', 'circular', 'clothes', 'compromise', 'conscripted', 'crimean', 'deaths', 'descended', 'distinguish', 'do', 'ears', 'earth', 'eventually', 'good', 'hand', 'hard', 'hedges', 'high', 'hour', 'iceman', 'institute', 'interpreted', 'lairs', 'main', 'married', 'math', 'originated', 'plestcheiev', 'population', 'proudhon', 'provisional', 'rallying', 'rapped', 'search', 'sergeant', 'stories', 'than', 'thread', 'troubles', 'way', 'wrote'],
-      ['Korea', 'addition', 'afternoons', 'arabic', 'argument', 'benefitted', 'bird', 'bring', 'counterexamples', 'countries', 'dear', 'disappeared', 'drowsy', 'elaborated', 'exceedingly', 'experts', 'exquisite', 'fantastique', 'generally', 'guaranteed', 'hair', 'happened', 'huts', 'intention', 'investigations', 'knock', 'knowing', 'lead', 'malnourished', 'prevail', 'real', 'resorted', 'school', 'scientists', 'servants', 'shaped', 'sharp', 'shelter', 'short', 'straight', 'studies', 'suggests', 'theorem', 'third', 'three', 'versailles', 'vladivostok', 'writes', 'written'],
-      ['Myanmar', 'against', 'barred', 'birds', 'bound', 'by', 'cauldron', 'chinese', 'classical', 'clear', 'commuted', 'crystallography', 'cunningly', 'depth', 'drainage', 'dwelt', 'eat', 'elaborate', 'established', 'estimates', 'explain', 'eyes', 'fighting', 'french', 'guevara', 'hadn', 'heroes', 'humanity', 'invisible', 'iota', 'looked', 'male', 'motorcycle', 'opposed', 'president', 'pride', 'received', 'rejected', 'says', 'sources', 'speak', 'suppression', 'telomeres', 'thereupon', 'they', 'trapp', 'vulnerable', 'weavers', 'while'],
-      ['admirable', 'application', 'artistotle', 'assassinated', 'assassination', 'because', 'bering', 'bomb', 'buy', 'bygone', 'campgrounds', 'carousing', 'daily', 'dividing', 'dominated', 'efface', 'ethical', 'fashionable', 'fools', 'fruits', 'head', 'health', 'help', 'individuals', 'influence', 'invented', 'lips', 'no', 'obliged', 'ordeal', 'pair', 'pounds', 'ray', 'reality', 'sapphires', 'schools', 'several', 'sewed', 'she', 'shoulders', 'specific', 'speechless', 'tenement', 'theatre', 'throughout', 'traditions', 'truth', 'whenever', 'would'],
-      ['Maurice', 'Nicholas', 'Novastoshnah', 'american', 'around', 'banned', 'bequeathed', 'build', 'communist', 'contains', 'couple', 'czarist', 'develop', 'developing', 'difficult', 'dourov', 'europeans', 'extravagantly', 'foods', 'gogol', 'government', 'happens', 'interpretations', 'learned', 'looms', 'may', 'opportunity', 'original', 'orleans', 'partition', 'rights', 'rodents', 'rogues', 'rooms', 'shere', 'something', 'teachings', 'thereafter', 'these', 'trouble', 'ultimately', 'unemployed', 'weight', 'what', 'whether', 'whither', 'worship', 'wouldn', 'yourselves'],
-      ['Argentina', 'Bangladesh', 'Blenheim', 'about', 'accustomed', 'allowed', 'bacterium', 'brought', 'ceylon', 'che', 'condemned', 'conditions', 'contributed', 'contribution', 'conversations', 'court', 'crick', 'drop', 'fascinating', 'generations', 'happy', 'hear', 'heaved', 'helped', 'higher', 'hundred', 'immediately', 'isle', 'known', 'least', 'literacy', 'mane', 'masquerades', 'mathematics', 'medger', 'north', 'pieces', 'possibility', 'pretexts', 'proof', 'reading', 'revolutions', 'rich', 'ships', 'surrounded', 'there', 'thousands', 'threes', 'together'],
-      ['actually', 'aloud', 'americans', 'background', 'baring', 'begun', 'books', 'changed', 'cherries', 'chimney', 'conclusion', 'damaged', 'delicious', 'either', 'elementary', 'examination', 'falsehoods', 'february', 'fingal', 'genetic', 'god', 'heart', 'heroine', 'huge', 'instead', 'migration', 'money', 'originally', 'paved', 'peanut', 'perfection', 'ponds', 'radical', 'repeat', 'revolution', 'right', 'roslin', 'sloth', 'steamer', 'studied', 'taught', 'teach', 'teacher', 'to', 'tradition', 'unfortunately', 'unmarried', 'veteran', 'without'],
-      ['Roosevelt', 'Turkey', 'agnes', 'although', 'animal', 'applied', 'attempts', 'bagheera', 'benevolent', 'boycotts', 'causes', 'clouds', 'companions', 'conflicts', 'deliciously', 'discipline', 'earning', 'execution', 'forgotten', 'fought', 'found', 'furthermore', 'go', 'gold', 'idolized', 'important', 'inquired', 'japanese', 'kerensky', 'mammary', 'miser', 'nervous', 'ocean', 'oh', 'outpaced', 'paper', 'position', 'published', 'reader', 'room', 'sanitation', 'scoop', 'thrown', 'train', 'understand', 'university', 'watching', 'whose', 'yours'],
-      ['Raymond', 'Schubert', 'agamemnon', 'always', 'anything', 'apparent', 'architecture', 'beethoven', 'carelessly', 'charges', 'corps', 'could', 'earned', 'eaten', 'economic', 'featured', 'graduating', 'heap', 'helping', 'hindu', 'impossibly', 'led', 'meals', 'medical', 'mound', 'mourned', 'neither', 'obviously', 'participated', 'persecution', 'projects', 'reasons', 'recorded', 'representation', 'russian', 'sailors', 'scholar', 'semyonovsky', 'society', 'soldiers', 'son', 'soon', 'stockholder', 'temperament', 'then', 'took', 'training', 'weave', 'wren'],
-      ['Mendelssohn', 'areas', 'began', 'both', 'bourgeoisie', 'changes', 'characters', 'children', 'communities', 'controversial', 'coup', 'curiously', 'day', 'due', 'evers', 'exciting', 'extraordinary', 'famous', 'genetically', 'had', 'impractical', 'inequality', 'influential', 'interested', 'interpreting', 'length', 'ministering', 'mukden', 'musicians', 'myths', 'night', 'others', 'personality', 'plane', 'potential', 'pray', 'prophets', 'qing', 'spanish', 'stare', 'strait', 'suitors', 'tale', 'thimble', 'thought', 'thus', 'transformation', 'whom', 'why'],
-      ['Paul', 'accommodation', 'acknowledges', 'backgrounds', 'be', 'busily', 'catapulted', 'chiquita', 'clipped', 'coats', 'complicated', 'designer', 'different', 'disagreeable', 'dish', 'four', 'goodness', 'grand', 'implications', 'infested', 'knocks', 'look', 'manhood', 'meant', 'month', 'months', 'nationally', 'new', 'officials', 'parts', 'path', 'plunged', 'poor', 'quaint', 'railway', 'republic', 'routes', 'science', 'seal', 'secretary', 'serfdom', 'snapped', 'traits', 'unhappy', 'upper', 'victories', 'ways', 'wealth', 'when'],
-      ['Byelinsky', 'adjusted', 'artists', 'assumptions', 'away', 'based', 'becoming', 'benefit', 'birth', 'blend', 'brain', 'branch', 'deep', 'discrimination', 'does', 'door', 'engels', 'faithfully', 'flippers', 'gain', 'grief', 'heal', 'hebrides', 'held', 'here', 'hidden', 'increase', 'interests', 'merchant', 'milkman', 'mite', 'none', 'pandemic', 'perhaps', 'proletariat', 'regular', 'repealed', 'shirts', 'splashed', 'stool', 'stout', 'structural', 'symphony', 'that', 'themselves', 'thing', 'wealthy', 'where', 'wood'],
-      ['Arthur', 'Hyaena', 'Telemachos', 'afraid', 'appearance', 'beginning', 'bid', 'brother', 'capability', 'ching', 'colonized', 'decided', 'decolonize', 'double', 'exception', 'fish', 'gods', 'governess', 'greatly', 'illiterate', 'irrigation', 'laborer', 'looks', 'loud', 'lounging', 'mowgli', 'national', 'numerous', 'out', 'parliament', 'peasant', 'pupil', 'ready', 'role', 'russians', 'sea', 'shelters', 'shot', 'should', 'soviet', 'spend', 'the', 'too', 'unknowingly', 'views', 'warriors', 'wished', 'womanly', 'young'],
-      ['Juliet', 'Limmershin', 'Pearl', 'bear', 'beat', 'being', 'branches', 'catch', 'country', 'czar', 'days', 'death', 'discoverers', 'dostoevsky', 'each', 'embodiment', 'ended', 'excessively', 'families', 'fanciful', 'father', 'food', 'forth', 'hoped', 'household', 'indigenous', 'international', 'islamic', 'monarchs', 'nearly', 'nowadays', 'organize', 'paid', 'playing', 'pond', 'pontellier', 'pretending', 'profits', 'protected', 'realized', 'religion', 'showed', 'surrogate', 'sweetmeats', 'taxation', 'thrilled', 'two', 'week', 'wizardments'],
-      ['Athena', 'Jackal', 'accomplished', 'accurate', 'again', 'ancestors', 'area', 'ate', 'attended', 'benefits', 'berlioz', 'blue', 'book', 'bought', 'committee', 'create', 'daughter', 'dead', 'dealt', 'experience', 'eyre', 'fair', 'fears', 'field', 'fiqh', 'fluttering', 'grade', 'heads', 'heroico', 'ideas', 'ignore', 'imprisonment', 'industrialized', 'inheritance', 'integration', 'interruptions', 'jewish', 'migrating', 'negotiate', 'political', 'pouted', 'proofs', 'riots', 'seas', 'segregation', 'serious', 'sounded', 'today', 'tried', 'villagers'],
-      ['Britain', 'Medgar', 'Seeonee', 'Yersinia', 'acquaintance', 'activists', 'affairs', 'agricultural', 'big', 'bold', 'breakdown', 'carrying', 'censorship', 'chapters', 'child', 'continued', 'council', 'disenfranchisement', 'early', 'everything', 'fighters', 'governments', 'grey', 'groups', 'haydn', 'he', 'imperialist', 'infrastructure', 'know', 'knowledge', 'leaves', 'nominated', 'occasions', 'pondered', 'precious', 'previous', 'prosperous', 'proteins', 'say', 'seals', 'skyinto', 'some', 'such', 'supplies', 'watershed', 'watson', 'weren', 'white', 'wonderful', 'writing'],
-      ['Liaodong', 'albeit', 'another', 'beaches', 'burrs', 'claimed', 'climb', 'clothing', 'conservation', 'couldn', 'countryside', 'cultivated', 'disappointed', 'education', 'employment', 'fleas', 'fourth', 'great', 'happen', 'hid', 'historians', 'historical', 'horse', 'its', 'latched', 'learn', 'logical', 'obeyed', 'odysseus', 'pastoral', 'photo', 'relentlessly', 'religious', 'sharia', 'shilling', 'shortest', 'show', 'slight', 'so', 'sought', 'think', 'this', 'throne', 'trap', 'treated', 'troops', 'unemployment', 'up', 'worth', 'years'],
-      ['Panther', 'advocated', 'appeared', 'aroused', 'autoimmune', 'automatically', 'bayou', 'begin', 'believe', 'ceased', 'charm', 'checked', 'eleven', 'engineering', 'english', 'finished', 'floor', 'frightened', 'going', 'governesses', 'guerilla', 'him', 'including', 'instituted', 'intellectual', 'knows', 'medieval', 'merrily', 'midday', 'might', 'organized', 'parents', 'paths', 'paycheck', 'prayed', 'prejudicial', 'read', 'recognize', 'restrictions', 'scholars', 'shared', 'sheep', 'someday', 'sound', 'teeth', 'them', 'threaded', 'touch', 'tragedies', 'whole'],
-      ['Mihail', 'Romanov', 'according', 'actual', 'beautiful', 'begged', 'breasts', 'british', 'buried', 'capital', 'caused', 'certainly', 'church', 'compound', 'corpses', 'created', 'delighted', 'denied', 'depending', 'descendants', 'deterred', 'discovery', 'dog', 'everyday', 'exhaustion', 'existence', 'expected', 'gray', 'knew', 'leave', 'marketable', 'means', 'mythology', 'peasants', 'preferences', 'prominent', 'prophecy', 'qur', 'rasputin', 'research', 'revolutionist', 'sell', 'similar', 'south', 'squander', 'subcontinent', 'thoughtful', 'threatened', 'through', 'utilizing'],
-      ['Arlington', 'Kenneth', 'allocate', 'already', 'baloo', 'blind', 'buddha', 'capitalist', 'civilian', 'claim', 'collection', 'conviction', 'deal', 'did', 'died', 'diseases', 'dishonest', 'dream', 'extended', 'fairly', 'fight', 'fourier', 'hands', 'imaginary', 'independence', 'knapsacks', 'laundryman', 'leader', 'magical', 'occupying', 'organization', 'other', 'parsimony', 'perceive', 'remained', 'restroom', 'said', 'saying', 'seen', 'separately', 'series', 'sixth', 'spread', 'thorns', 'thoughtfully', 'unbound', 'unhappily', 'violence', 'watched', 'with'],
-      ['alcorn', 'assistant', 'behavior', 'bubbling', 'choose', 'coincidentally', 'comb', 'conversation', 'd', 'designed', 'didn', 'differently', 'disappointment', 'effects', 'engaged', 'exasperated', 'flood', 'foolish', 'friends', 'ground', 'husband', 'improvements', 'mang', 'maps', 'military', 'mother', 'much', 'nucleus', 'october', 'opportunities', 'pads', 'pantheon', 'pestis', 'pools', 'poorly', 'principle', 'realms', 'reasoning', 'resulted', 'rosalind', 'round', 'see', 'shortages', 'shows', 'technology', 'threat', 'trails', 'weak', 'who', 'year']
-    ];
+    const words = ["malnourished", "thoughtfully", "beach", "weight", "death", "disappeared", "banana"];
     let currentIndex = 0;
     let startTime = Date.now();
     let responses = [];
-    let currentPhase = "rating";
+    let currentPhase = "rating"; 
     const participantUrl = document.referrer || "Direct";
     const MIN_EXPLANATION_LENGTH = 10;
-
-    function getDatasetIndex(prolificId) {
-      let hash = 0;
-      for (let i = 0; i < prolificId.length; i++) {
-        hash = (hash * 31 + prolificId.charCodeAt(i)) % datasets.length;
-      }
-      return hash;
-    }
 
     function validateProlificId() {
       const input = document.getElementById("participantId").value.trim();
@@ -246,9 +213,6 @@
     function startTask() {
       const input = document.getElementById("participantId").value.trim();
       participantId = input;
-
-      const datasetIndex = getDatasetIndex(participantId);
-      words = datasets[datasetIndex]; // Set words to the selected dataset
       document.getElementById("id-input-section").style.display = "none";
       document.getElementById("main-task").style.display = "block";
       showWord();
@@ -274,8 +238,7 @@
           reason: "",
           participants_url: participantUrl,
           timestamp: formatTimestamp(new Date()),
-          rating_sequence: [],
-          dataset_index: getDatasetIndex(participantId) + 1 // 1-based index for readability
+          rating_sequence: []
         };
       }
     }
@@ -290,6 +253,7 @@
       const reasonInput = document.getElementById("difficultyReason");
       const errorContainer = document.getElementById("error-container");
 
+      // Reset all UI elements
       wordBox.innerHTML = "";
       instruction.style.display = "none";
       nextBtn.disabled = true;
@@ -299,6 +263,7 @@
       errorContainer.innerHTML = "";
       currentPhase = "rating";
       
+      // Reset rating buttons
       document.querySelectorAll(".rating-button").forEach(btn => {
         btn.classList.remove("selected");
         btn.disabled = false;
@@ -320,13 +285,15 @@
 
         wordBox.appendChild(wordContainer);
         
+        // Initialize response object
         initializeResponse(currentIndex);
         
         submitBtn.style.display = "none";
         nextBtn.style.display = "inline-block";
         startTime = Date.now();
       } else {
-        wordBox.innerHTML = "<h6>All words completed!</h6>";
+        // Task completed
+        wordBox.innerHTML = "<h2>All words completed!</h2>";
         submitBtn.style.display = "inline-block";
         nextBtn.style.display = "none";
         document.querySelectorAll(".rating-button").forEach(btn => btn.style.display = "none");
@@ -334,15 +301,18 @@
     }
 
     function clearAllSelections() {
+      // Clear letter selections
       const letters = document.querySelectorAll("#word .letter");
       letters.forEach(span => {
         span.classList.remove("selectable", "clicked");
         span.onclick = null;
       });
       
+      // Clear text explanation
       document.getElementById("difficultyReason").value = "";
       updateCharCount();
       
+      // Reset response data for current word
       if (responses[currentIndex]) {
         responses[currentIndex].clicked_letters = [];
         responses[currentIndex].reason = "";
@@ -352,6 +322,7 @@
     function rateWord(rating) {
       const timeTaken = (Date.now() - startTime) / 1000;
       
+      // Update UI - highlight selected button
       document.querySelectorAll(".rating-button").forEach(btn => {
         btn.classList.remove("selected");
         if (parseInt(btn.dataset.rating) === rating) {
@@ -359,22 +330,28 @@
         }
       });
 
+      // Initialize response if needed
       initializeResponse(currentIndex);
       
+      // Clear any previous selections when rating changes
       clearAllSelections();
       
+      // Update response data
       responses[currentIndex].rating_sequence.push(rating);
       responses[currentIndex].difficulty = responses[currentIndex].rating_sequence.join(',');
       responses[currentIndex].time_seconds = timeTaken;
 
+      // Hide instruction elements initially
       document.getElementById("rating-instruction").style.display = "none";
       document.getElementById("no-letter-option").style.display = "none";
       document.getElementById("text-explanation").style.display = "none";
       
       if (rating <= 2) {
+        // Easy ratings - can proceed immediately
         currentPhase = "rating";
         document.getElementById("next-btn").disabled = false;
       } else {
+        // Hard ratings - need letter selection or explanation
         currentPhase = "letter-selection";
         document.getElementById("rating-instruction").style.display = "block";
         document.getElementById("no-letter-option").style.display = "block";
@@ -392,9 +369,11 @@
         span.onclick = () => {
           const idx = parseInt(span.dataset.index);
           if (span.classList.contains("clicked")) {
+            // Unselect letter
             span.classList.remove("clicked");
             responses[currentIndex].clicked_letters = responses[currentIndex].clicked_letters.filter(l => l.position !== idx);
           } else {
+            // Select letter
             span.classList.add("clicked");
             responses[currentIndex].clicked_letters.push({ 
               letter: span.textContent, 
@@ -405,6 +384,7 @@
         };
       });
       
+      // Set up the clear link click handler
       const clearLink = document.getElementById("clear");
       if (clearLink) {
         clearLink.onclick = resetLetterSelection;
@@ -412,19 +392,23 @@
     }
 
     function resetLetterSelection() {
+      // Clear visual selections and data
       const letters = document.querySelectorAll("#word .letter");
       letters.forEach(span => span.classList.remove("clicked"));
       responses[currentIndex].clicked_letters = [];
       
+      // Hide text explanation if it was showing
       document.getElementById("text-explanation").style.display = "none";
       document.getElementById("difficultyReason").value = "";
       responses[currentIndex].reason = "";
       
+      // Reset to letter selection phase
       currentPhase = "letter-selection";
       document.getElementById("rating-instruction").style.display = "block";
       document.getElementById("rating-instruction").innerHTML = 'Click the <b>letters</b> in the word above that you found hard to read. <span id="clear" class="clear-text">[reset selected letters]</span>';
       document.getElementById("no-letter-option").style.display = "block";
       
+      // Re-enable letter selection
       enableLetterSelection();
       
       checkNextButtonState();
@@ -444,6 +428,7 @@
       noLetterOption.style.display = "none";
       instruction.innerHTML = "Please explain why this word is hard to read: <span id='clear' class='clear-text'>[reset and go back to letter selection]</span>";
       
+      // Disable letter selection
       const letters = document.querySelectorAll("#word .letter");
       letters.forEach(span => {
         span.classList.remove("selectable");
@@ -452,6 +437,7 @@
       
       document.getElementById("difficultyReason").focus();
       
+      // Set up the clear link for explanation phase
       const clearLink = document.getElementById("clear");
       if (clearLink) {
         clearLink.onclick = resetLetterSelection;
@@ -499,6 +485,7 @@
     }
 
     function goToNextWord() {
+      // Validate current state
       if (currentPhase === "text-explanation") {
         const reasonText = document.getElementById("difficultyReason").value.trim();
         if (reasonText.length < MIN_EXPLANATION_LENGTH) {
@@ -556,14 +543,17 @@
       });
     }
 
+    // Keyboard event listener
     document.addEventListener('keydown', (event) => {
       const key = event.key;
       
+      // Handle Enter key for start button
       if (key === 'Enter') {
         const idInputSection = document.getElementById("id-input-section");
         const mainTask = document.getElementById("main-task");
         
         if (idInputSection.style.display !== "none") {
+          // We're in the ID input phase
           const startBtn = document.getElementById("start-btn");
           if (!startBtn.disabled) {
             event.preventDefault();
@@ -572,9 +562,12 @@
           }
         }
         
+        // Handle main task phase
         if (mainTask.style.display === "block") {
+          // Don't interfere if user is typing in textarea
           if (event.target.tagName === 'TEXTAREA') return;
           
+          // Allow Enter to proceed if next button is enabled
           const nextBtn = document.getElementById("next-btn");
           const submitBtn = document.getElementById("submit-btn");
           
@@ -588,10 +581,13 @@
         }
       }
       
+      // Handle rating shortcuts only in main task
       const mainTask = document.getElementById("main-task");
       if (mainTask.style.display !== "block") return;
       
+      // Allow rating shortcuts in any phase (unless typing in textarea)
       if (['1', '2', '3', '4'].includes(key)) {
+        // Don't interfere if user is typing in textarea
         if (event.target.tagName === 'TEXTAREA') return;
         
         const rating = parseInt(key);
@@ -601,8 +597,10 @@
       }
     });
 
+    // Initialize character count for text area
     document.getElementById("difficultyReason").addEventListener('input', updateCharCount);
 
+    // Add click event for no-letter option
     document.getElementById("no-letter-option").onclick = showExplanationBox;
   </script>
 </body>
